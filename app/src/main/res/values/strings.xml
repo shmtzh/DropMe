@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">DropMe</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_history">History</string>
+    <string name="turn_off">turn off</string>
+    <string name="title_activity_history">HistoryActivity</string>
+    <string name="action_settings">Settings</string>
+</resources>
