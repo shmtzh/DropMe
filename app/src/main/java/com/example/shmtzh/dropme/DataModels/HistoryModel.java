@@ -5,15 +5,6 @@ public class HistoryModel {
     private double x;
     private double y;
     private double z;
-//    private CharSequence date;
-
-//    public HistoryModel(double x, double y, double z, CharSequence date) {
-//        this.x = x;
-//        this.y = y;
-//        this.z = z;
-//        this.date = date;
-//    }
-
 
     public HistoryModel(double x, double y, double z) {
         this.x = x;

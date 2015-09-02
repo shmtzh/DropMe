@@ -33,9 +33,6 @@ public class HistoryAdapter extends BaseAdapter {
         TextView tvZ;
     }
 
-
-
-
     @Override
     public int getCount() {
         return historyList.size();
@@ -70,7 +67,7 @@ public class HistoryAdapter extends BaseAdapter {
         }
 
 
-        holder.tvNumber.setText(String.valueOf(position + 1) );
+        holder.tvNumber.setText(String.valueOf(position + 1));
         holder.tvX.setText(String.valueOf(historyList.get(position).getX()));
         holder.tvY.setText(String.valueOf(historyList.get(position).getY()));
         holder.tvZ.setText(String.valueOf(historyList.get(position).getZ()));

@@ -16,21 +16,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.shmtzh.dropme.DataModels.DataManager;
 import com.example.shmtzh.dropme.DataModels.HistoryModel;
+import com.example.shmtzh.dropme.Interfaces.ServiceHttpbin;
 import com.example.shmtzh.dropme.Listeners.OnSwitcherClickListener;
 import com.example.shmtzh.dropme.R;
+import com.google.gson.Gson;
 
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-import java.io.IOException;
 import java.util.Date;
+
+import butterknife.InjectView;
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class DropActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -40,12 +41,14 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
     private float last_x, last_y, last_z;
     private static final int SHAKE_THRESHOLD = 600;
     private SharedPreferences mPrefs;
-    private TextView number;
+
+    //    @InjectView(R.id.switcher)
+    Button switcher;
+
+    //    @InjectView(R.id.number)
+    TextView number;
+
     private int drops;
-    private Button switcher;
-    String URL = "http://the/url/here";
-    String result = "";
-    String deviceId = "xxxxx" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +56,13 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_drop);
 
         switcher = (Button) findViewById(R.id.switcher);
-        switcher.setOnClickListener(new OnSwitcherClickListener());
         number = (TextView) findViewById(R.id.number);
+
+        switcher.setOnClickListener(new OnSwitcherClickListener());
         number.setText(String.valueOf(getTheNumber()));
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
 
     }
 
@@ -81,7 +84,6 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
         if (id == R.id.action_reset) {
             saveNumber(0);
             number.setText("0");
-
 
             mPrefs = this.getSharedPreferences("history", Context.MODE_PRIVATE);
             SharedPreferences.Editor prefsEditor = mPrefs.edit();
@@ -112,21 +114,38 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public void callWebService(String q){
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpGet request = new HttpGet(URL + q);
-        request.addHeader("deviceId", deviceId);
-        ResponseHandler<String> handler = new BasicResponseHandler();
-        try {
-            result = httpclient.execute(request, handler);
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        httpclient.getConnectionManager().shutdown();
-        Log.i("TAG in connection manager", result);
-    } // end callWebService()
+    public void callWebService(float x, float y, float z) {
+
+        final String API_URL = "http://httpbin.org";
+
+
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(API_URL)
+                .build();
+
+        Gson gson = new Gson();
+        HistoryModel model = new HistoryModel(x, y, z);
+        String json = gson.toJson(model);
+
+
+        ServiceHttpbin post = restAdapter.create(ServiceHttpbin.class);
+
+
+        post.sendModel(json, new Callback<HistoryModel>() {
+
+            @Override
+            public void success(HistoryModel model, Response response) {
+                Log.d("uploading", "success");
+            }
+
+            @Override
+            public void failure(RetrofitError retrofitError) {
+                Log.d("uploading", "failure");
+            }
+        });
+
+
+    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -177,7 +196,8 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
         saveNumber(drops);
         saveToHistory(x, y, z);
         playTheMusic(drops);
-        callWebService("");
+
+        callWebService(x, y, z);
 
         Date d = new Date();
         CharSequence s = DateFormat.format("EEEE, MMMM d, yyyy ", d.getTime());
@@ -237,16 +257,13 @@ public class DropActivity extends AppCompatActivity implements SensorEventListen
     private int increaseTheNumber(int drops) {
 
         drops += 1;
-
         return drops;
     }
 
     private int getTheNumber() {
 
         mPrefs = this.getSharedPreferences("drops", Context.MODE_PRIVATE);
-
         return mPrefs.getInt("drops", 0);
-//        return 0;
     }
 
 

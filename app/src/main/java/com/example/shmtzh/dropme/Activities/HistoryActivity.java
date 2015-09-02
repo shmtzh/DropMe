@@ -16,18 +16,21 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
+import butterknife.InjectView;
+
 public class HistoryActivity extends AppCompatActivity {
 
+    //    @InjectView(R.id.history_list_view)
     ListView listview;
+
     ArrayList<HistoryModel> drops = new ArrayList<HistoryModel>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
-
-
         listview = (ListView) findViewById(R.id.history_list_view);
+
         loadList();
 
         if (drops != null) listview.setAdapter(new HistoryAdapter(this, drops));
